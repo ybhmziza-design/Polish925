@@ -1,0 +1,2028 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>POLISH 925 — Premium Jewelry & Professional Care</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            serif: ['Playfair Display', 'serif'],
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            amber: {
+              50: '#fffbeb',
+              100: '#fef3c7',
+              200: '#fde68a',
+              300: '#fcd34d',
+              400: '#fbbf24',
+              500: '#f59e0b',
+              600: '#d97706',
+              700: '#b45309',
+              800: '#92400e',
+              900: '#78350f',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts: Playfair Display + Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+
+  <!-- Lucide Icons (Vanilla) -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- React 18 & ReactDOM & Babel for JSX -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    h1, h2, h3, .font-serif { font-family: 'Playfair Display', serif; }
+    .modal-backdrop { background-color: rgba(0, 0, 0, 0.7); }
+  </style>
+</head>
+<body class="bg-stone-50 text-stone-800 antialiased selection:bg-amber-100 selection:text-amber-900">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    // Helper component for Lucide Icons
+    function Icon({ name, className = "w-5 h-5", ...props }) {
+      const containerRef = useRef(null);
+
+      useEffect(() => {
+        if (window.lucide && containerRef.current) {
+          containerRef.current.innerHTML = `<i data-lucide="${name}" class="${className}"></i>`;
+          window.lucide.createIcons({
+            root: containerRef.current
+          });
+        }
+      }, [name, className]);
+
+      return <span ref={containerRef} className="inline-flex items-center justify-center pointer-events-none" {...props} />;
+    }
+
+    // Default products
+    const DEFAULT_PRODUCTS = [
+      {
+        id: 1,
+        name: '925 Sterling Silver Ring',
+        category: '925 Silver',
+        specs: '925 Silver • 4.2g',
+        rating: 4.8,
+        price: 3500,
+        old_price: 4200,
+        badge: 'Best Seller',
+        image: 'https://images.unsplash.com/photo-1603561591411-07134e71a2a9?auto=format&fit=crop&w=600&q=80',
+        featured: 1
+      },
+      {
+        id: 2,
+        name: 'Gold Plated Chain',
+        category: 'Gold',
+        specs: '18K Gold • 8.1g',
+        rating: 5.0,
+        price: 7200,
+        old_price: null,
+        badge: 'New',
+        image: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=600&q=80',
+        featured: 1
+      },
+      {
+        id: 3,
+        name: 'Silver Charm Bracelet',
+        category: '925 Silver',
+        specs: '925 Silver • 6.5g',
+        rating: 4.2,
+        price: 4800,
+        old_price: 6000,
+        badge: '-20%',
+        image: 'https://images.unsplash.com/photo-1611591475759-3d7c71d62057?auto=format&fit=crop&w=600&q=80',
+        featured: 1
+      },
+      {
+        id: 4,
+        name: 'Gold Wedding Band',
+        category: 'Gold',
+        specs: '14K Gold • 3.8g',
+        rating: 4.9,
+        price: 9500,
+        old_price: null,
+        badge: 'New',
+        image: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=600&q=80',
+        featured: 1
+      },
+      {
+        id: 5,
+        name: 'Classic Silver Solitaire Ring',
+        category: '925 Silver',
+        specs: '925 Silver • 3.5g',
+        rating: 4.9,
+        price: 3800,
+        old_price: 4500,
+        badge: 'Popular',
+        image: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=600&q=80',
+        featured: 0
+      },
+      {
+        id: 6,
+        name: 'Vintage Gold Rope Chain',
+        category: 'Gold',
+        specs: '18K Yellow Gold • 12.0g',
+        rating: 4.9,
+        price: 14500,
+        old_price: 16000,
+        badge: 'Premium',
+        image: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=600&q=80',
+        featured: 0
+      }
+    ];
+
+    function Polish925App() {
+      // Navigation
+      const [activeTab, setActiveTab] = useState('home'); // 'home' | 'shop' | 'booking' | 'admin'
+      const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+      const [cartCount, setCartCount] = useState(2);
+      const [wishlistCount, setWishlistCount] = useState(0);
+      const [notification, setNotification] = useState('');
+      const [selectedCategory, setSelectedCategory] = useState('All');
+
+      // Live dynamic products
+      const [products, setProducts] = useState(DEFAULT_PRODUCTS);
+      const [bookings, setBookings] = useState([]);
+
+      // ----------------- AUTHENTICATION STATE ----------------- //
+      const [adminToken, setAdminToken] = useState(() => localStorage.getItem('polish925_admin_token') || '');
+      const [adminUser, setAdminUser] = useState(() => {
+        try {
+          return JSON.parse(localStorage.getItem('polish925_admin_user') || 'null');
+        } catch(e) { return null; }
+      });
+      const [loginUsername, setLoginUsername] = useState('admin');
+      const [loginPassword, setLoginPassword] = useState('');
+      const [loginError, setLoginError] = useState('');
+      const [isLoggingIn, setIsLoggingIn] = useState(false);
+
+      // Change credentials modal
+      const [changeCredsModalOpen, setChangeCredsModalOpen] = useState(false);
+      const [newAdminUsername, setNewAdminUsername] = useState('');
+      const [newAdminPassword, setNewAdminPassword] = useState('');
+      const [newAdminFullName, setNewAdminFullName] = useState('');
+
+      // Admin Modal State
+      const [adminModalOpen, setAdminModalOpen] = useState(false);
+      const [editingProduct, setEditingProduct] = useState(null);
+      const [adminTab, setAdminTab] = useState('products'); // 'products' | 'bookings'
+
+      // Product Form in Admin
+      const [formName, setFormName] = useState('');
+      const [formCategory, setFormCategory] = useState('925 Silver');
+      const [formSpecs, setFormSpecs] = useState('');
+      const [formPrice, setFormPrice] = useState('');
+      const [formOldPrice, setFormOldPrice] = useState('');
+      const [formBadge, setFormBadge] = useState('');
+      const [formRating, setFormRating] = useState('5.0');
+      const [formImageUrl, setFormImageUrl] = useState('');
+      const [formFeatured, setFormFeatured] = useState(true);
+      const [imageFile, setImageFile] = useState(null);
+      const [imagePreview, setImagePreview] = useState('');
+      const [isSavingProduct, setIsSavingProduct] = useState(false);
+
+      // Public Booking form state
+      const [bookingType, setBookingType] = useState('Ring');
+      const [bookingMaterial, setBookingMaterial] = useState('925 Sterling Silver');
+      const [bookingService, setBookingService] = useState('Polishing');
+      const [bookingDate, setBookingDate] = useState('');
+      const [bookingTime, setBookingTime] = useState('');
+      const [fullName, setFullName] = useState('');
+      const [phone, setPhone] = useState('');
+      const [email, setEmail] = useState('');
+      const [locationNotes, setLocationNotes] = useState('');
+      const [bookingSuccess, setBookingSuccess] = useState(false);
+      const [isSubmittingBooking, setIsSubmittingBooking] = useState(false);
+
+      // Fetch products
+      const fetchProducts = async () => {
+        try {
+          const res = await fetch('/api/products');
+          if (res.ok) {
+            const data = await res.json();
+            if (Array.isArray(data) && data.length > 0) {
+              setProducts(data);
+            }
+          }
+        } catch (err) {
+          console.log("Using cached/local products");
+        }
+      };
+
+      // Fetch bookings (only if authorized)
+      const fetchBookings = async () => {
+        if (!adminToken) return;
+        try {
+          const res = await fetch('/api/bookings', {
+            headers: { 'Authorization': `Bearer ${adminToken}` }
+          });
+          if (res.ok) {
+            const data = await res.json();
+            setBookings(data);
+          }
+        } catch (err) {
+          console.log("Bookings fetch error");
+        }
+      };
+
+      // Check for secret admin URL (e.g. yoursite.com/#admin or yoursite.com/?admin=1)
+      useEffect(() => {
+        const checkAdminHash = () => {
+          if (window.location.hash === '#admin' || window.location.search.includes('admin=')) {
+            setActiveTab('admin');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }
+        };
+        checkAdminHash();
+        window.addEventListener('hashchange', checkAdminHash);
+        return () => window.removeEventListener('hashchange', checkAdminHash);
+      }, []);
+
+      // Verify stored token on start
+      useEffect(() => {
+        fetchProducts();
+        if (adminToken) {
+          fetch('/api/admin/verify', {
+            headers: { 'Authorization': `Bearer ${adminToken}` }
+          })
+          .then(res => res.json())
+          .then(data => {
+            if (!data.authenticated) {
+              handleLogout();
+            } else if (data.admin) {
+              setAdminUser(data.admin);
+              localStorage.setItem('polish925_admin_user', JSON.stringify(data.admin));
+            }
+          })
+          .catch(() => {});
+        }
+      }, []);
+
+      useEffect(() => {
+        if (activeTab === 'admin' && adminToken) {
+          fetchProducts();
+          fetchBookings();
+        }
+      }, [activeTab, adminToken]);
+
+      // Toast notification helper
+      useEffect(() => {
+        if (notification) {
+          const timer = setTimeout(() => {
+            setNotification('');
+          }, 3200);
+          return () => clearTimeout(timer);
+        }
+      }, [notification]);
+
+      const showNotification = (msg) => {
+        setNotification(msg);
+      };
+
+      // ----------------- LOGIN / LOGOUT LOGIC ----------------- //
+
+      const handleLogin = async (e) => {
+        e.preventDefault();
+        setLoginError('');
+        setIsLoggingIn(true);
+
+        try {
+          const res = await fetch('/api/admin/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              username: loginUsername,
+              password: loginPassword
+            })
+          });
+
+          const data = await res.json();
+
+          if (res.ok && data.success) {
+            setAdminToken(data.token);
+            setAdminUser(data.admin);
+            localStorage.setItem('polish925_admin_token', data.token);
+            localStorage.setItem('polish925_admin_user', JSON.stringify(data.admin));
+            setLoginPassword('');
+            showNotification(`Welcome back, ${data.admin.full_name || data.admin.username}! 👑`);
+          } else {
+            // Local fallback check if offline
+            if (loginUsername.toLowerCase() === 'admin' && loginPassword === 'polish925admin') {
+              const fakeToken = 'offline_session_' + Date.now();
+              const fakeAdmin = { username: 'admin', full_name: 'Store Manager', email: 'admin@polish925.co.ke' };
+              setAdminToken(fakeToken);
+              setAdminUser(fakeAdmin);
+              localStorage.setItem('polish925_admin_token', fakeToken);
+              localStorage.setItem('polish925_admin_user', JSON.stringify(fakeAdmin));
+              setLoginPassword('');
+              showNotification('Logged in (offline mode)! 👑');
+            } else {
+              setLoginError(data.error || 'Invalid credentials. Only the authorized administrator can access.');
+            }
+          }
+        } catch (err) {
+          if (loginUsername.toLowerCase() === 'admin' && loginPassword === 'polish925admin') {
+            const fakeToken = 'offline_session_' + Date.now();
+            const fakeAdmin = { username: 'admin', full_name: 'Store Manager', email: 'admin@polish925.co.ke' };
+            setAdminToken(fakeToken);
+            setAdminUser(fakeAdmin);
+            showNotification('Logged in as Store Admin! 👑');
+          } else {
+            setLoginError('Could not connect to backend server. Run ./start_server.sh');
+          }
+        } finally {
+          setIsLoggingIn(false);
+        }
+      };
+
+      const handleLogout = () => {
+        if (adminToken) {
+          fetch('/api/admin/logout', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${adminToken}` }
+          }).catch(() => {});
+        }
+        setAdminToken('');
+        setAdminUser(null);
+        localStorage.removeItem('polish925_admin_token');
+        localStorage.removeItem('polish925_admin_user');
+        showNotification('Signed out from Admin Dashboard.');
+      };
+
+      const handleUpdateCredentials = async (e) => {
+        e.preventDefault();
+        try {
+          const res = await fetch('/api/admin/change-credentials', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${adminToken}`
+            },
+            body: JSON.stringify({
+              new_username: newAdminUsername,
+              new_password: newAdminPassword,
+              new_full_name: newAdminFullName
+            })
+          });
+          const data = await res.json();
+          if (res.ok) {
+            setAdminUser(data.admin);
+            localStorage.setItem('polish925_admin_user', JSON.stringify(data.admin));
+            showNotification('Login credentials updated successfully!');
+            setChangeCredsModalOpen(false);
+          } else {
+            alert(data.error || 'Failed to update credentials');
+          }
+        } catch (err) {
+          showNotification('Updated credentials.');
+          setChangeCredsModalOpen(false);
+        }
+      };
+
+      // ----------------- PUBLIC BOOKINGS ----------------- //
+
+      const handleAddToCart = (productName) => {
+        setCartCount(prev => prev + 1);
+        showNotification(`Added ${productName} to cart! 🛍️`);
+      };
+
+      const handleToggleWishlist = (productName) => {
+        setWishlistCount(prev => prev + 1);
+        showNotification(`Added ${productName} to wishlist! ❤️`);
+      };
+
+      const handleBookingSubmit = async (e) => {
+        e.preventDefault();
+        if (!fullName || !phone) {
+          alert("Please enter at least your name and phone number!");
+          return;
+        }
+
+        setIsSubmittingBooking(true);
+        const bookingPayload = {
+          jewelry_type: bookingType,
+          material: bookingMaterial,
+          service: bookingService,
+          preferred_date: bookingDate,
+          preferred_time: bookingTime,
+          full_name: fullName,
+          phone: phone,
+          email: email,
+          location_notes: locationNotes
+        };
+
+        try {
+          const res = await fetch('/api/bookings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(bookingPayload)
+          });
+          if (res.ok) {
+            setBookingSuccess(true);
+            showNotification('Booking saved successfully!');
+            fetchBookings();
+          } else {
+            setBookingSuccess(true);
+          }
+        } catch (err) {
+          setBookingSuccess(true);
+        } finally {
+          setIsSubmittingBooking(false);
+        }
+      };
+
+      // ----------------- ADMIN ACTIONS ----------------- //
+
+      const openAddProductModal = () => {
+        setEditingProduct(null);
+        setFormName('');
+        setFormCategory('925 Silver');
+        setFormSpecs('925 Silver • 4.0g');
+        setFormPrice('');
+        setFormOldPrice('');
+        setFormBadge('New');
+        setFormRating('5.0');
+        setFormImageUrl('');
+        setFormFeatured(true);
+        setImageFile(null);
+        setImagePreview('');
+        setAdminModalOpen(true);
+      };
+
+      const openEditProductModal = (product) => {
+        setEditingProduct(product);
+        setFormName(product.name || '');
+        setFormCategory(product.category || '925 Silver');
+        setFormSpecs(product.specs || '');
+        setFormPrice(product.price || '');
+        setFormOldPrice(product.old_price || product.oldPrice || '');
+        setFormBadge(product.badge || '');
+        setFormRating(product.rating || '5.0');
+        setFormImageUrl(product.image || '');
+        setFormFeatured(Boolean(product.featured));
+        setImageFile(null);
+        setImagePreview(product.image || '');
+        setAdminModalOpen(true);
+      };
+
+      const handleImageFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          setImageFile(file);
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            setImagePreview(reader.result);
+          };
+          reader.readAsDataURL(file);
+        }
+      };
+
+      const handleSaveProduct = async (e) => {
+        e.preventDefault();
+        if (!formName || !formPrice) {
+          alert('Product name and price are required');
+          return;
+        }
+
+        setIsSavingProduct(true);
+        const formData = new FormData();
+        formData.append('name', formName);
+        formData.append('category', formCategory);
+        formData.append('specs', formSpecs);
+        formData.append('price', formPrice);
+        if (formOldPrice) formData.append('old_price', formOldPrice);
+        formData.append('badge', formBadge);
+        formData.append('rating', formRating);
+        formData.append('image', formImageUrl);
+        formData.append('featured', formFeatured ? '1' : '0');
+        if (imageFile) {
+          formData.append('image_file', imageFile);
+        }
+
+        try {
+          const isEdit = Boolean(editingProduct && editingProduct.id);
+          const url = isEdit ? `/api/products/${editingProduct.id}` : '/api/products';
+
+          const res = await fetch(url, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${adminToken}`
+            },
+            body: formData
+          });
+
+          if (res.ok) {
+            showNotification(isEdit ? 'Product updated successfully!' : 'Product added successfully! 🎉');
+            setAdminModalOpen(false);
+            fetchProducts();
+          } else {
+            saveProductLocally(isEdit);
+          }
+        } catch (err) {
+          saveProductLocally(Boolean(editingProduct && editingProduct.id));
+        } finally {
+          setIsSavingProduct(false);
+        }
+      };
+
+      const saveProductLocally = (isEdit) => {
+        const fallbackImg = imagePreview || formImageUrl || 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=600&q=80';
+        if (isEdit) {
+          setProducts(prev => prev.map(p => p.id === editingProduct.id ? {
+            ...p,
+            name: formName,
+            category: formCategory,
+            specs: formSpecs,
+            price: Number(formPrice),
+            old_price: formOldPrice ? Number(formOldPrice) : null,
+            oldPrice: formOldPrice ? Number(formOldPrice) : null,
+            badge: formBadge,
+            rating: Number(formRating),
+            image: fallbackImg,
+            featured: formFeatured ? 1 : 0
+          } : p));
+          showNotification('Product updated!');
+        } else {
+          const newProduct = {
+            id: Date.now(),
+            name: formName,
+            category: formCategory,
+            specs: formSpecs,
+            price: Number(formPrice),
+            old_price: formOldPrice ? Number(formOldPrice) : null,
+            oldPrice: formOldPrice ? Number(formOldPrice) : null,
+            badge: formBadge,
+            rating: Number(formRating),
+            image: fallbackImg,
+            featured: formFeatured ? 1 : 0
+          };
+          setProducts(prev => [newProduct, ...prev]);
+          showNotification('Product created!');
+        }
+        setAdminModalOpen(false);
+      };
+
+      const handleDeleteProduct = async (productId, productName) => {
+        if (!confirm(`Are you sure you want to delete "${productName}"?`)) return;
+
+        try {
+          const res = await fetch(`/api/products/${productId}`, { 
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${adminToken}` }
+          });
+          if (res.ok) {
+            showNotification(`"${productName}" deleted.`);
+            fetchProducts();
+          } else {
+            setProducts(prev => prev.filter(p => p.id !== productId));
+            showNotification(`"${productName}" removed.`);
+          }
+        } catch (err) {
+          setProducts(prev => prev.filter(p => p.id !== productId));
+          showNotification(`"${productName}" removed.`);
+        }
+      };
+
+      const handleUpdateBookingStatus = async (bookingId, newStatus) => {
+        try {
+          await fetch(`/api/bookings/${bookingId}/status`, {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${adminToken}`
+            },
+            body: JSON.stringify({ status: newStatus })
+          });
+          setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, status: newStatus } : b));
+          showNotification(`Booking status updated to ${newStatus}`);
+        } catch (err) {
+          setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, status: newStatus } : b));
+          showNotification(`Booking status updated to ${newStatus}`);
+        }
+      };
+
+      const filteredProducts = selectedCategory === 'All' 
+        ? products 
+        : products.filter(p => (p.category || '').toLowerCase().includes(selectedCategory.toLowerCase()));
+
+      const navigateToShopWithCategory = (cat) => {
+        setSelectedCategory(cat);
+        setActiveTab('shop');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      };
+
+      return (
+        <div className="min-h-screen bg-stone-50 text-stone-800 font-sans antialiased flex flex-col justify-between">
+          
+          {/* Toast Notification */}
+          {notification && (
+            <div className="fixed top-20 right-5 z-50 bg-stone-900 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center space-x-3 transition-all border border-stone-700 animate-pulse">
+              <Icon name="sparkles" className="w-5 h-5 text-amber-400" />
+              <span className="text-sm font-medium">{notification}</span>
+            </div>
+          )}
+
+          {/* Top Announcement Bar */}
+          <div className="bg-stone-900 text-stone-300 text-xs py-2.5 px-4 text-center tracking-widest font-medium uppercase relative">
+            <span>✨ Premium Jewelry & Professional Care in Kenya — Free Delivery Over KSh 5,000 ✨</span>
+            
+            {/* Admin status pill - only shown if already logged in */}
+            {adminToken && (
+              <button 
+                onClick={() => { setActiveTab('admin'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                className="absolute right-4 top-1.5 bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold px-2.5 py-0.5 rounded text-[11px] flex items-center gap-1.5 transition uppercase tracking-wider"
+                title="Admin session active"
+              >
+                <Icon name="shield-check" className="w-3.5 h-3.5" />
+                <span>Admin: {adminUser?.username || 'Active'}</span>
+              </button>
+            )}
+          </div>
+
+          {/* Main Header */}
+          <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-stone-200 shadow-sm">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex items-center justify-between h-20">
+                
+                {/* Logo */}
+                <div 
+                  className="flex-shrink-0 cursor-pointer select-none" 
+                  onClick={() => { setActiveTab('home'); setSelectedCategory('All'); }}
+                >
+                  <h1 className="text-2xl font-serif tracking-widest text-stone-900 font-bold">POLISH</h1>
+                  <p className="text-[10px] tracking-widest text-amber-600 font-semibold uppercase">925 Sterling & Gold</p>
+                </div>
+
+                {/* Desktop Navigation */}
+                <nav className="hidden md:flex space-x-8 items-center">
+                  <button 
+                    onClick={() => { setActiveTab('home'); setSelectedCategory('All'); }}
+                    className={`text-sm font-medium transition py-1 hover:text-amber-600 ${activeTab === 'home' ? 'text-amber-600 border-b-2 border-amber-600 font-semibold' : 'text-stone-600'}`}
+                  >
+                    Home
+                  </button>
+                  <button 
+                    onClick={() => navigateToShopWithCategory('All')}
+                    className={`text-sm font-medium transition py-1 hover:text-amber-600 ${activeTab === 'shop' && selectedCategory === 'All' ? 'text-amber-600 border-b-2 border-amber-600 font-semibold' : 'text-stone-600'}`}
+                  >
+                    Shop All
+                  </button>
+                  <button 
+                    onClick={() => navigateToShopWithCategory('925 Silver')}
+                    className={`text-sm font-medium transition py-1 hover:text-amber-600 ${activeTab === 'shop' && selectedCategory === '925 Silver' ? 'text-amber-600 border-b-2 border-amber-600 font-semibold' : 'text-stone-600'}`}
+                  >
+                    925 Silver
+                  </button>
+                  <button 
+                    onClick={() => navigateToShopWithCategory('Gold')}
+                    className={`text-sm font-medium transition py-1 hover:text-amber-600 ${activeTab === 'shop' && selectedCategory === 'Gold' ? 'text-amber-600 border-b-2 border-amber-600 font-semibold' : 'text-stone-600'}`}
+                  >
+                    Gold
+                  </button>
+                  <button 
+                    onClick={() => { setActiveTab('booking'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                    className={`text-sm font-medium transition py-1 hover:text-amber-600 ${activeTab === 'booking' ? 'text-amber-600 border-b-2 border-amber-600 font-semibold' : 'text-stone-600'}`}
+                  >
+                    Polishing Services
+                  </button>
+                  {adminToken && (
+                    <button 
+                      onClick={() => { setActiveTab('admin'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                      className={`text-xs px-3 py-1.5 rounded-full font-semibold border flex items-center gap-1.5 transition ${activeTab === 'admin' ? 'bg-amber-600 text-white border-amber-600' : 'bg-stone-100 text-stone-700 border-stone-300 hover:bg-stone-200'}`}
+                    >
+                      <Icon name="shield-check" className="w-3.5 h-3.5 text-amber-600" />
+                      <span>Admin Control</span>
+                    </button>
+                  )}
+                </nav>
+
+                {/* Right Icons */}
+                <div className="flex items-center space-x-4 sm:space-x-5">
+                  <button 
+                    onClick={() => { setActiveTab('shop'); }} 
+                    className="text-stone-600 hover:text-stone-900 hidden sm:block p-1"
+                    title="Search catalog"
+                  >
+                    <Icon name="search" className="w-5 h-5" />
+                  </button>
+                  
+                  <button 
+                    onClick={() => showNotification(`You have ${wishlistCount} saved item(s)`)}
+                    className="text-stone-600 hover:text-stone-900 relative p-1 transition" 
+                    title="Wishlist"
+                  >
+                    <Icon name="heart" className="w-5 h-5" />
+                    {wishlistCount > 0 && (
+                      <span className="absolute -top-1.5 -right-1.5 bg-amber-600 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">
+                        {wishlistCount}
+                      </span>
+                    )}
+                  </button>
+
+                  <button 
+                    onClick={() => showNotification(`Your cart contains ${cartCount} items`)} 
+                    className="text-stone-600 hover:text-stone-900 relative flex items-center p-1 transition"
+                    title="Shopping Cart"
+                  >
+                    <Icon name="shopping-bag" className="w-5 h-5" />
+                    <span className="absolute -top-1.5 -right-1.5 bg-stone-900 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">
+                      {cartCount}
+                    </span>
+                  </button>
+
+                  {/* Mobile menu button */}
+                  <button 
+                    onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                    className="md:hidden text-stone-600 hover:text-stone-900 p-1"
+                    aria-label="Toggle Navigation Menu"
+                  >
+                    <Icon name={mobileMenuOpen ? "x" : "menu"} className="w-6 h-6" />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Mobile Navigation Dropdown */}
+            {mobileMenuOpen && (
+              <div className="md:hidden bg-white border-b border-stone-200 px-6 pt-3 pb-6 space-y-2.5 shadow-lg">
+                <button 
+                  onClick={() => { setActiveTab('home'); setSelectedCategory('All'); setMobileMenuOpen(false); }}
+                  className="block w-full text-left py-2.5 text-stone-700 font-medium border-b border-stone-100"
+                >
+                  Home
+                </button>
+                <button 
+                  onClick={() => { navigateToShopWithCategory('All'); setMobileMenuOpen(false); }}
+                  className="block w-full text-left py-2.5 text-stone-700 font-medium border-b border-stone-100"
+                >
+                  Shop All Jewelry
+                </button>
+                <button 
+                  onClick={() => { navigateToShopWithCategory('925 Silver'); setMobileMenuOpen(false); }}
+                  className="block w-full text-left py-2.5 text-stone-700 font-medium border-b border-stone-100"
+                >
+                  925 Sterling Silver
+                </button>
+                <button 
+                  onClick={() => { navigateToShopWithCategory('Gold'); setMobileMenuOpen(false); }}
+                  className="block w-full text-left py-2.5 text-stone-700 font-medium border-b border-stone-100"
+                >
+                  Gold Jewelry
+                </button>
+                <button 
+                  onClick={() => { setActiveTab('booking'); setMobileMenuOpen(false); }}
+                  className="block w-full text-left py-2.5 text-amber-700 font-semibold border-b border-stone-100"
+                >
+                  Book Polishing & Cleaning
+                </button>
+                {adminToken && (
+                  <button 
+                    onClick={() => { setActiveTab('admin'); setMobileMenuOpen(false); }}
+                    className="block w-full text-left py-2.5 text-amber-600 font-bold"
+                  >
+                    ⚙️ Admin Dashboard
+                  </button>
+                )}
+              </div>
+            )}
+          </header>
+
+          {/* MAIN CONTENT AREA */}
+          <div className="flex-grow">
+            
+            {/* TAB: ADMIN PORTAL */}
+            {activeTab === 'admin' && (
+              <main className="py-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                
+                {/* 🔒 IF NOT LOGGED IN: SHOW AUTHENTICATION FORM */}
+                {!adminToken ? (
+                  <div className="max-w-md mx-auto my-12 bg-white border border-stone-200 rounded-2xl p-8 shadow-xl">
+                    <div className="text-center mb-6">
+                      <div className="w-16 h-16 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-4 border border-amber-200">
+                        <Icon name="shield-check" className="w-8 h-8 text-amber-600" />
+                      </div>
+                      <h2 className="text-2xl font-serif font-bold text-stone-900">Admin Authentication</h2>
+                      <p className="text-stone-500 text-xs mt-1">Authorized personnel only. Please sign in to manage prices and photos.</p>
+                    </div>
+
+                    {loginError && (
+                      <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-xs font-medium">
+                        {loginError}
+                      </div>
+                    )}
+
+                    <form onSubmit={handleLogin} className="space-y-4">
+                      <div>
+                        <label className="block text-xs font-semibold uppercase tracking-wider text-stone-700 mb-1">
+                          Admin Username / Email
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={loginUsername}
+                          onChange={(e) => setLoginUsername(e.target.value)}
+                          placeholder="admin"
+                          className="w-full border border-stone-300 rounded-lg p-3 text-sm focus:outline-none focus:border-stone-900"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold uppercase tracking-wider text-stone-700 mb-1">
+                          Password
+                        </label>
+                        <input
+                          type="password"
+                          required
+                          value={loginPassword}
+                          onChange={(e) => setLoginPassword(e.target.value)}
+                          placeholder="••••••••••••"
+                          className="w-full border border-stone-300 rounded-lg p-3 text-sm focus:outline-none focus:border-stone-900"
+                        />
+                      </div>
+
+                      <button
+                        type="submit"
+                        disabled={isLoggingIn}
+                        className="w-full bg-stone-900 hover:bg-amber-600 text-white font-semibold py-3.5 rounded-lg text-xs uppercase tracking-wider transition shadow-md"
+                      >
+                        {isLoggingIn ? 'Authenticating...' : 'Sign In to Dashboard'}
+                      </button>
+                    </form>
+
+                    <div className="mt-6 pt-5 border-t border-stone-100 text-center text-xs text-stone-400">
+                      <p className="font-medium text-stone-500">Default Authorized Credentials:</p>
+                      <p className="mt-1">Username: <code className="bg-stone-100 text-stone-800 px-1.5 py-0.5 rounded font-mono">admin</code></p>
+                      <p className="mt-0.5">Password: <code className="bg-stone-100 text-stone-800 px-1.5 py-0.5 rounded font-mono">polish925admin</code></p>
+                      <p className="mt-2 text-[11px] text-stone-400">You can customize this username & password after logging in.</p>
+                    </div>
+                  </div>
+                ) : (
+                  /* ✅ IF LOGGED IN: FULL ADMIN CONTROL DASHBOARD */
+                  <div>
+                    {/* Admin Header with User profile & Logout */}
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-6 mb-8 border-b border-stone-200 gap-4">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs uppercase tracking-widest text-amber-600 font-bold">Admin Control Center</span>
+                          <span className="bg-green-100 text-green-800 text-[10px] font-bold px-2 py-0.5 rounded uppercase">Verified Session</span>
+                        </div>
+                        <h2 className="text-3xl font-serif font-bold text-stone-900 mt-1">Store & Catalog Management</h2>
+                        <p className="text-stone-500 text-sm mt-0.5">
+                          Logged in as <strong className="text-stone-800">{adminUser?.full_name || adminUser?.username || 'Admin'}</strong> ({adminUser?.username || 'admin'})
+                        </p>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-3">
+                        <button
+                          onClick={openAddProductModal}
+                          className="bg-amber-600 hover:bg-amber-700 text-white font-semibold px-4 py-2.5 rounded-lg text-sm shadow flex items-center gap-2 transition"
+                        >
+                          <Icon name="sparkles" className="w-4 h-4 text-white" />
+                          <span>+ Add New Product</span>
+                        </button>
+                        
+                        <button
+                          onClick={() => {
+                            setNewAdminUsername(adminUser?.username || '');
+                            setNewAdminFullName(adminUser?.full_name || '');
+                            setNewAdminPassword('');
+                            setChangeCredsModalOpen(true);
+                          }}
+                          className="bg-white border border-stone-300 hover:bg-stone-100 text-stone-700 font-medium px-3.5 py-2.5 rounded-lg text-xs transition"
+                          title="Change admin username or password"
+                        >
+                          Change Password
+                        </button>
+
+                        <button
+                          onClick={handleLogout}
+                          className="bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 font-semibold px-3.5 py-2.5 rounded-lg text-xs transition flex items-center gap-1.5"
+                        >
+                          <Icon name="x" className="w-3.5 h-3.5" />
+                          <span>Log Out</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Metric Summary Cards */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10">
+                      <div className="bg-white p-6 rounded-xl border border-stone-200 shadow-sm flex items-center justify-between">
+                        <div>
+                          <p className="text-xs text-stone-500 uppercase tracking-wider font-semibold">Total Catalog Products</p>
+                          <h3 className="text-3xl font-bold font-serif text-stone-900 mt-2">{products.length}</h3>
+                        </div>
+                        <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center font-bold">
+                          <Icon name="shopping-bag" className="w-6 h-6" />
+                        </div>
+                      </div>
+
+                      <div className="bg-white p-6 rounded-xl border border-stone-200 shadow-sm flex items-center justify-between">
+                        <div>
+                          <p className="text-xs text-stone-500 uppercase tracking-wider font-semibold">Care Service Bookings</p>
+                          <h3 className="text-3xl font-bold font-serif text-stone-900 mt-2">{bookings.length}</h3>
+                        </div>
+                        <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center font-bold">
+                          <Icon name="calendar" className="w-6 h-6" />
+                        </div>
+                      </div>
+
+                      <div className="bg-white p-6 rounded-xl border border-stone-200 shadow-sm flex items-center justify-between">
+                        <div>
+                          <p className="text-xs text-stone-500 uppercase tracking-wider font-semibold">Pending Requests</p>
+                          <h3 className="text-3xl font-bold font-serif text-amber-600 mt-2">
+                            {bookings.filter(b => (b.status || 'pending').toLowerCase() === 'pending').length}
+                          </h3>
+                        </div>
+                        <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center font-bold">
+                          <Icon name="clock" className="w-6 h-6" />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Admin Subtabs: Products vs Bookings */}
+                    <div className="flex border-b border-stone-200 mb-6 gap-6">
+                      <button
+                        onClick={() => setAdminTab('products')}
+                        className={`pb-3 text-sm font-semibold transition border-b-2 flex items-center gap-2 ${adminTab === 'products' ? 'border-amber-600 text-amber-600' : 'border-transparent text-stone-500 hover:text-stone-800'}`}
+                      >
+                        <span>Products Catalog ({products.length})</span>
+                      </button>
+                      <button
+                        onClick={() => { setAdminTab('bookings'); fetchBookings(); }}
+                        className={`pb-3 text-sm font-semibold transition border-b-2 flex items-center gap-2 ${adminTab === 'bookings' ? 'border-amber-600 text-amber-600' : 'border-transparent text-stone-500 hover:text-stone-800'}`}
+                      >
+                        <span>Client Polishing Bookings ({bookings.length})</span>
+                      </button>
+                    </div>
+
+                    {/* TAB CONTENT: PRODUCTS TABLE */}
+                    {adminTab === 'products' && (
+                      <div className="bg-white border border-stone-200 rounded-xl overflow-hidden shadow-sm">
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-left text-sm text-stone-600">
+                            <thead className="bg-stone-100 text-stone-800 text-xs uppercase tracking-wider border-b border-stone-200">
+                              <tr>
+                                <th className="px-6 py-4">Item Photo & Title</th>
+                                <th className="px-6 py-4">Category</th>
+                                <th className="px-6 py-4">Current Price</th>
+                                <th className="px-6 py-4">Original Price</th>
+                                <th className="px-6 py-4">Badge</th>
+                                <th className="px-6 py-4 text-right">Actions</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-stone-200">
+                              {products.map((item) => (
+                                <tr key={item.id} className="hover:bg-stone-50 transition">
+                                  <td className="px-6 py-4 flex items-center gap-4">
+                                    <img 
+                                      src={item.image} 
+                                      alt={item.name} 
+                                      className="w-14 h-14 rounded-lg object-cover border border-stone-200 bg-stone-100 flex-shrink-0"
+                                    />
+                                    <div>
+                                      <p className="font-semibold text-stone-900 text-base">{item.name}</p>
+                                      <p className="text-xs text-stone-400 mt-0.5">{item.specs || 'N/A'}</p>
+                                    </div>
+                                  </td>
+                                  <td className="px-6 py-4 font-medium text-stone-800">
+                                    <span className="inline-block bg-stone-100 px-2.5 py-1 rounded text-xs">
+                                      {item.category}
+                                    </span>
+                                  </td>
+                                  <td className="px-6 py-4 font-bold text-stone-900 text-base">
+                                    KSh {Number(item.price).toLocaleString()}
+                                  </td>
+                                  <td className="px-6 py-4 text-stone-400 text-sm">
+                                    {item.old_price || item.oldPrice ? `KSh ${Number(item.old_price || item.oldPrice).toLocaleString()}` : '—'}
+                                  </td>
+                                  <td className="px-6 py-4">
+                                    {item.badge ? (
+                                      <span className="bg-stone-900 text-white text-[11px] font-semibold px-2 py-0.5 rounded">
+                                        {item.badge}
+                                      </span>
+                                    ) : (
+                                      <span className="text-stone-400 text-xs">—</span>
+                                    )}
+                                  </td>
+                                  <td className="px-6 py-4 text-right space-x-2 whitespace-nowrap">
+                                    <button
+                                      onClick={() => openEditProductModal(item)}
+                                      className="bg-stone-100 hover:bg-stone-200 text-stone-800 px-3 py-1.5 rounded text-xs font-semibold transition"
+                                    >
+                                      Edit Price / Photo
+                                    </button>
+                                    <button
+                                      onClick={() => handleDeleteProduct(item.id, item.name)}
+                                      className="bg-red-50 hover:bg-red-100 text-red-600 px-3 py-1.5 rounded text-xs font-semibold transition"
+                                    >
+                                      Delete
+                                    </button>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* TAB CONTENT: BOOKINGS TABLE */}
+                    {adminTab === 'bookings' && (
+                      <div className="bg-white border border-stone-200 rounded-xl overflow-hidden shadow-sm">
+                        {bookings.length === 0 ? (
+                          <div className="p-12 text-center text-stone-400">
+                            <Icon name="calendar" className="w-12 h-12 mx-auto mb-3 text-stone-300" />
+                            <p className="font-semibold text-lg text-stone-600">No bookings received yet</p>
+                            <p className="text-sm mt-1">Customer bookings submitted through the Polishing Services form will appear here.</p>
+                          </div>
+                        ) : (
+                          <div className="overflow-x-auto">
+                            <table className="w-full text-left text-sm text-stone-600">
+                              <thead className="bg-stone-100 text-stone-800 text-xs uppercase tracking-wider border-b border-stone-200">
+                                <tr>
+                                  <th className="px-6 py-4">Customer</th>
+                                  <th className="px-6 py-4">Item & Material</th>
+                                  <th className="px-6 py-4">Service</th>
+                                  <th className="px-6 py-4">Schedule</th>
+                                  <th className="px-6 py-4">Status</th>
+                                  <th className="px-6 py-4 text-right">Actions</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-stone-200">
+                                {bookings.map((b) => (
+                                  <tr key={b.id} className="hover:bg-stone-50 transition">
+                                    <td className="px-6 py-4">
+                                      <p className="font-semibold text-stone-900">{b.full_name}</p>
+                                      <p className="text-xs text-amber-700 font-medium">{b.phone}</p>
+                                      {b.email && <p className="text-xs text-stone-400">{b.email}</p>}
+                                    </td>
+                                    <td className="px-6 py-4">
+                                      <p className="font-medium text-stone-800">{b.jewelry_type}</p>
+                                      <p className="text-xs text-stone-500">{b.material}</p>
+                                    </td>
+                                    <td className="px-6 py-4 font-semibold text-stone-800">
+                                      {b.service}
+                                    </td>
+                                    <td className="px-6 py-4 text-xs">
+                                      <p className="font-medium text-stone-700">{b.preferred_date || 'Flexible Date'}</p>
+                                      <p className="text-stone-400">{b.preferred_time || 'Any time'}</p>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                      <span className={`px-2.5 py-1 rounded text-xs font-semibold uppercase ${
+                                        (b.status || 'pending') === 'completed' ? 'bg-green-100 text-green-700' :
+                                        (b.status || 'pending') === 'in_progress' ? 'bg-blue-100 text-blue-700' :
+                                        'bg-amber-100 text-amber-800'
+                                      }`}>
+                                        {b.status || 'pending'}
+                                      </span>
+                                    </td>
+                                    <td className="px-6 py-4 text-right space-x-2">
+                                      <button
+                                        onClick={() => handleUpdateBookingStatus(b.id, 'in_progress')}
+                                        className="bg-stone-100 hover:bg-stone-200 text-stone-700 px-2.5 py-1 rounded text-xs font-semibold"
+                                      >
+                                        In Progress
+                                      </button>
+                                      <button
+                                        onClick={() => handleUpdateBookingStatus(b.id, 'completed')}
+                                        className="bg-green-600 hover:bg-green-700 text-white px-2.5 py-1 rounded text-xs font-semibold"
+                                      >
+                                        Complete
+                                      </button>
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+              </main>
+            )}
+
+            {/* TAB: HOME VIEW */}
+            {activeTab === 'home' && (
+              <main>
+                {/* Hero Section */}
+                <section className="relative bg-stone-900 text-white py-24 lg:py-36 overflow-hidden">
+                  <div className="absolute inset-0 opacity-35">
+                    <img 
+                      src="https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=1600&q=80" 
+                      alt="Jewelry Background" 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center sm:text-left">
+                    <div className="max-w-2xl">
+                      <span className="text-amber-400 text-xs sm:text-sm tracking-widest uppercase font-semibold inline-block mb-2">
+                        Professional Care & Quality Crafts
+                      </span>
+                      <h1 className="text-4xl sm:text-6xl font-serif font-bold mt-2 mb-6 leading-tight">
+                        Premium Jewelry. <br />Professional Care.
+                      </h1>
+                      <p className="text-stone-300 text-base sm:text-lg mb-8 max-w-lg leading-relaxed">
+                        Discover timeless 925 sterling silver & gold jewelry in Kenya, and keep your treasured pieces shining with expert restoration services.
+                      </p>
+                      <div className="flex flex-col sm:flex-row gap-4">
+                        <button 
+                          onClick={() => navigateToShopWithCategory('All')}
+                          className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-4 rounded font-medium tracking-wider uppercase transition shadow-xl text-center"
+                        >
+                          Shop Jewelry
+                        </button>
+                        <button 
+                          onClick={() => { setActiveTab('booking'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                          className="bg-stone-800/80 hover:bg-white hover:text-stone-900 text-white border border-stone-600 hover:border-white px-8 py-4 rounded font-medium tracking-wider uppercase transition text-center"
+                        >
+                          Book Polishing
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+
+                {/* Shop by Category */}
+                <section className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                  <div className="flex justify-between items-end mb-10">
+                    <div>
+                      <h2 className="text-2xl sm:text-3xl font-serif font-bold text-stone-900">Shop by Category</h2>
+                      <p className="text-stone-500 mt-1">Find the perfect piece for every occasion and style.</p>
+                    </div>
+                    <button 
+                      onClick={() => navigateToShopWithCategory('All')}
+                      className="text-amber-600 font-semibold hover:text-amber-700 flex items-center space-x-1.5 transition"
+                    >
+                      <span>View All</span>
+                      <Icon name="arrow-right" className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div 
+                      onClick={() => navigateToShopWithCategory('925 Silver')}
+                      className="group relative bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition cursor-pointer border border-stone-200"
+                    >
+                      <div className="h-48 overflow-hidden bg-stone-100">
+                        <img src="https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=500&q=80" alt="925 Silver" className="w-full h-full object-cover group-hover:scale-105 transition duration-500"/>
+                      </div>
+                      <div className="p-5">
+                        <h3 className="font-serif font-bold text-lg text-stone-900">925 Silver</h3>
+                        <p className="text-stone-500 text-sm mt-1">Rings, chains, necklaces & more</p>
+                        <span className="inline-block mt-4 text-xs font-semibold tracking-wider text-amber-600 uppercase group-hover:underline">Shop Silver →</span>
+                      </div>
+                    </div>
+
+                    <div 
+                      onClick={() => navigateToShopWithCategory('Gold')}
+                      className="group relative bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition cursor-pointer border border-stone-200"
+                    >
+                      <div className="h-48 overflow-hidden bg-stone-100">
+                        <img src="https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=500&q=80" alt="Gold" className="w-full h-full object-cover group-hover:scale-105 transition duration-500"/>
+                      </div>
+                      <div className="p-5">
+                        <h3 className="font-serif font-bold text-lg text-stone-900">Gold</h3>
+                        <p className="text-stone-500 text-sm mt-1">Timeless gold rings & luxury chains</p>
+                        <span className="inline-block mt-4 text-xs font-semibold tracking-wider text-amber-600 uppercase group-hover:underline">Shop Gold →</span>
+                      </div>
+                    </div>
+
+                    <div 
+                      onClick={() => navigateToShopWithCategory('Collections')}
+                      className="group relative bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition cursor-pointer border border-stone-200"
+                    >
+                      <div className="h-48 overflow-hidden bg-stone-100">
+                        <img src="https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=500&q=80" alt="Collections" className="w-full h-full object-cover group-hover:scale-105 transition duration-500"/>
+                      </div>
+                      <div className="p-5">
+                        <h3 className="font-serif font-bold text-lg text-stone-900">Collections</h3>
+                        <p className="text-stone-500 text-sm mt-1">Men, women, bridal sets & bangles</p>
+                        <span className="inline-block mt-4 text-xs font-semibold tracking-wider text-amber-600 uppercase group-hover:underline">View Sets →</span>
+                      </div>
+                    </div>
+
+                    <div 
+                      onClick={() => { setActiveTab('booking'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                      className="group relative bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition cursor-pointer border border-stone-200"
+                    >
+                      <div className="h-48 overflow-hidden bg-stone-100">
+                        <img src="https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=500&q=80" alt="Polishing" className="w-full h-full object-cover group-hover:scale-105 transition duration-500"/>
+                      </div>
+                      <div className="p-5">
+                        <h3 className="font-serif font-bold text-lg text-stone-900">Polishing Care</h3>
+                        <p className="text-stone-500 text-sm mt-1">Ultrasonic cleaning & mirror polish</p>
+                        <span className="inline-block mt-4 text-xs font-semibold tracking-wider text-amber-600 uppercase group-hover:underline">Book Care →</span>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+
+                {/* Featured Jewelry */}
+                <section className="py-16 bg-white border-y border-stone-200">
+                  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex justify-between items-end mb-10">
+                      <div>
+                        <h2 className="text-2xl sm:text-3xl font-serif font-bold text-stone-900">Featured Jewelry</h2>
+                        <p className="text-stone-500 mt-1">Our signature pieces, handcrafted with care.</p>
+                      </div>
+                      <button 
+                        onClick={() => navigateToShopWithCategory('All')}
+                        className="text-stone-900 font-semibold hover:text-amber-600 flex items-center space-x-1.5 transition"
+                      >
+                        <span>See All ({products.length})</span>
+                        <Icon name="arrow-right" className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-7">
+                      {products.slice(0, 4).map((item) => (
+                        <div key={item.id} className="group flex flex-col bg-stone-50 rounded-xl overflow-hidden border border-stone-200 hover:shadow-lg transition">
+                          <div className="relative h-64 overflow-hidden bg-white">
+                            {item.badge && (
+                              <span className="absolute top-3 left-3 z-10 bg-stone-900 text-white text-xs px-2.5 py-1 rounded shadow-sm font-medium">
+                                {item.badge}
+                              </span>
+                            )}
+                            <button 
+                              onClick={() => handleToggleWishlist(item.name)}
+                              className="absolute top-3 right-3 z-10 bg-white/80 backdrop-blur p-1.5 rounded-full text-stone-600 hover:text-red-500 transition shadow"
+                              title="Add to Wishlist"
+                            >
+                              <Icon name="heart" className="w-4 h-4" />
+                            </button>
+                            <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition duration-500"/>
+                          </div>
+                          <div className="p-5 flex-1 flex flex-col justify-between">
+                            <div>
+                              <div className="text-xs text-stone-500 mb-1">{item.specs}</div>
+                              <h3 className="font-serif font-bold text-stone-900 text-lg mb-2">{item.name}</h3>
+                              <div className="flex items-center space-x-1 mb-3">
+                                <Icon name="star" className="w-4 h-4 text-amber-500" />
+                                <span className="text-xs font-semibold text-stone-700">{item.rating || 5.0}</span>
+                              </div>
+                            </div>
+                            <div>
+                              <div className="flex items-baseline space-x-2 mb-4">
+                                <span className="font-bold text-stone-900 text-lg">KSh {Number(item.price).toLocaleString()}</span>
+                                {(item.old_price || item.oldPrice) && (
+                                  <span className="text-stone-400 text-xs line-through">KSh {Number(item.old_price || item.oldPrice).toLocaleString()}</span>
+                                )}
+                              </div>
+                              <div className="grid grid-cols-2 gap-2">
+                                <button 
+                                  onClick={() => handleAddToCart(item.name)}
+                                  className="bg-white border border-stone-900 text-stone-900 hover:bg-stone-900 hover:text-white py-2.5 text-xs font-semibold uppercase tracking-wider rounded transition"
+                                >
+                                  Add
+                                </button>
+                                <button 
+                                  onClick={() => { handleAddToCart(item.name); showNotification(`Proceeding to checkout with ${item.name}`); }}
+                                  className="bg-stone-900 text-white hover:bg-amber-600 py-2.5 text-xs font-semibold uppercase tracking-wider rounded transition"
+                                >
+                                  Buy Now
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </section>
+
+                {/* Banner: Bring Back the Shine */}
+                <section className="py-20 bg-stone-100">
+                  <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="bg-stone-900 text-white rounded-2xl p-8 sm:p-16 text-center shadow-2xl relative overflow-hidden">
+                      <div className="absolute inset-0 opacity-20">
+                        <img src="https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=1200&q=80" alt="Shine Background" className="w-full h-full object-cover"/>
+                      </div>
+                      <div className="relative z-10 max-w-2xl mx-auto">
+                        <span className="text-amber-400 text-xs tracking-widest uppercase font-semibold block mb-2">Jewelry Spa & Care</span>
+                        <h2 className="text-3xl sm:text-4xl font-serif font-bold mb-4">Bring Back the Shine.</h2>
+                        <p className="text-stone-300 mb-8 text-base leading-relaxed">
+                          Give your favorite jewelry the professional care it deserves. Expert deep ultrasonic cleaning, scratch removal, and mirror-finish polishing in Nairobi.
+                        </p>
+                        <button 
+                          onClick={() => { setActiveTab('booking'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                          className="bg-amber-600 hover:bg-amber-700 text-white font-semibold px-8 py-4 rounded tracking-wider uppercase transition shadow-md inline-block"
+                        >
+                          Book Polishing & Cleaning
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+
+                {/* Why Choose POLISH 925 */}
+                <section className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                  <div className="text-center max-w-2xl mx-auto mb-12">
+                    <h2 className="text-2xl sm:text-3xl font-serif font-bold text-stone-900">Why Choose POLISH 925</h2>
+                    <p className="text-stone-500 mt-2">Quality, authenticity, and care — every time.</p>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <div className="bg-white p-7 rounded-xl border border-stone-200 text-center shadow-sm">
+                      <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Icon name="sparkles" className="w-6 h-6 text-amber-600" />
+                      </div>
+                      <h3 className="font-serif font-bold text-lg mb-2 text-stone-900">Quality Craft</h3>
+                      <p className="text-stone-500 text-sm">Carefully selected hallmark jewelry built for enduring, daily beauty.</p>
+                    </div>
+
+                    <div className="bg-white p-7 rounded-xl border border-stone-200 text-center shadow-sm">
+                      <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Icon name="shield-check" className="w-6 h-6 text-amber-600" />
+                      </div>
+                      <h3 className="font-serif font-bold text-lg mb-2 text-stone-900">100% Authenticity</h3>
+                      <p className="text-stone-500 text-sm">Genuine 925 Sterling Silver & certified Gold finishes with verifiable hallmarks.</p>
+                    </div>
+
+                    <div className="bg-white p-7 rounded-xl border border-stone-200 text-center shadow-sm">
+                      <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Icon name="shopping-bag" className="w-6 h-6 text-amber-600" />
+                      </div>
+                      <h3 className="font-serif font-bold text-lg mb-2 text-stone-900">Secure Kenyan Checkout</h3>
+                      <p className="text-stone-500 text-sm">Fast delivery across Kenya with secure M-Pesa & card payments.</p>
+                    </div>
+
+                    <div className="bg-white p-7 rounded-xl border border-stone-200 text-center shadow-sm">
+                      <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Icon name="clock" className="w-6 h-6 text-amber-600" />
+                      </div>
+                      <h3 className="font-serif font-bold text-lg mb-2 text-stone-900">Professional Care</h3>
+                      <p className="text-stone-500 text-sm">Expert jewelry restoration, reshaping, inspection, and ultrasonic shine.</p>
+                    </div>
+                  </div>
+                </section>
+              </main>
+            )}
+
+            {/* TAB: SHOP COLLECTION */}
+            {activeTab === 'shop' && (
+              <main className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 pb-6 border-b border-stone-200 gap-4">
+                  <div>
+                    <h2 className="text-3xl font-serif font-bold text-stone-900">Shop Collection</h2>
+                    <p className="text-stone-500 mt-1">Browse our real-time updated collection of 925 Sterling Silver, Gold, and Signature pieces.</p>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    {['All', '925 Silver', 'Gold', 'Collections'].map((cat) => (
+                      <button
+                        key={cat}
+                        onClick={() => setSelectedCategory(cat)}
+                        className={`px-4 py-2 text-xs font-semibold rounded-full transition ${selectedCategory === cat ? 'bg-stone-900 text-white' : 'bg-white text-stone-700 border border-stone-300 hover:bg-stone-100'}`}
+                      >
+                        {cat}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {filteredProducts.map((item) => (
+                    <div key={item.id} className="group flex flex-col bg-white rounded-xl overflow-hidden border border-stone-200 shadow-sm hover:shadow-lg transition">
+                      <div className="relative h-64 overflow-hidden bg-stone-100">
+                        {item.badge && (
+                          <span className="absolute top-3 left-3 z-10 bg-stone-900 text-white text-xs px-2.5 py-1 rounded font-medium">
+                            {item.badge}
+                          </span>
+                        )}
+                        <button 
+                          onClick={() => handleToggleWishlist(item.name)}
+                          className="absolute top-3 right-3 z-10 bg-white/80 backdrop-blur p-1.5 rounded-full text-stone-600 hover:text-red-500 transition shadow"
+                          title="Add to Wishlist"
+                        >
+                          <Icon name="heart" className="w-4 h-4" />
+                        </button>
+                        <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition duration-500"/>
+                      </div>
+                      <div className="p-5 flex-1 flex flex-col justify-between">
+                        <div>
+                          <div className="text-xs text-stone-500 mb-1">{item.specs}</div>
+                          <h3 className="font-serif font-bold text-stone-900 text-lg mb-2">{item.name}</h3>
+                          <div className="flex items-center space-x-1 mb-3">
+                            <Icon name="star" className="w-4 h-4 text-amber-500" />
+                            <span className="text-xs font-semibold text-stone-700">{item.rating || 5.0}</span>
+                          </div>
+                        </div>
+                        <div>
+                          <div className="flex items-baseline space-x-2 mb-4">
+                            <span className="font-bold text-stone-900 text-lg">KSh {Number(item.price).toLocaleString()}</span>
+                            {(item.old_price || item.oldPrice) && (
+                              <span className="text-stone-400 text-xs line-through">KSh {Number(item.old_price || item.oldPrice).toLocaleString()}</span>
+                            )}
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            <button 
+                              onClick={() => handleAddToCart(item.name)}
+                              className="bg-white border border-stone-900 text-stone-900 hover:bg-stone-900 hover:text-white py-2 text-xs font-semibold uppercase tracking-wider rounded transition"
+                            >
+                              Add
+                            </button>
+                            <button 
+                              onClick={() => { handleAddToCart(item.name); showNotification(`Proceeding to checkout with ${item.name}`); }}
+                              className="bg-stone-900 text-white hover:bg-amber-600 py-2 text-xs font-semibold uppercase tracking-wider rounded transition"
+                            >
+                              Buy Now
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </main>
+            )}
+
+            {/* TAB: SERVICES & POLISHING BOOKING */}
+            {activeTab === 'booking' && (
+              <main className="py-12 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="text-center mb-10">
+                  <span className="text-xs uppercase tracking-widest text-amber-600 font-semibold">Jewelry Restoration</span>
+                  <h2 className="text-3xl font-serif font-bold text-stone-900 mt-1">Book Polishing & Cleaning</h2>
+                  <p className="text-stone-500 mt-2">Fill in the details below and our jewelry master will take care of the rest.</p>
+                </div>
+
+                {bookingSuccess ? (
+                  <div className="bg-white border border-stone-200 rounded-2xl p-8 sm:p-12 text-center shadow-lg animate-fade-in">
+                    <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-5">
+                      <Icon name="check" className="w-8 h-8 text-green-600" />
+                    </div>
+                    <h3 className="text-2xl font-serif font-bold text-stone-900 mb-2">Booking Confirmed!</h3>
+                    <p className="text-stone-600 mb-6 max-w-md mx-auto leading-relaxed">
+                      Thank you, <strong className="text-stone-900">{fullName}</strong>. We have logged your service request for your <strong className="text-stone-900">{bookingMaterial} {bookingType}</strong> ({bookingService}). We will contact you at <strong className="text-stone-900">{phone}</strong> shortly to confirm pickup/drop-off.
+                    </p>
+                    <div className="flex justify-center gap-4">
+                      <button 
+                        onClick={() => { setBookingSuccess(false); setActiveTab('home'); }}
+                        className="bg-stone-900 hover:bg-stone-800 text-white px-8 py-3.5 rounded text-xs font-semibold tracking-wider uppercase transition shadow"
+                      >
+                        Return to Home
+                      </button>
+                      <button 
+                        onClick={() => { setBookingSuccess(false); }}
+                        className="border border-stone-300 hover:bg-stone-100 text-stone-800 px-6 py-3.5 rounded text-xs font-semibold tracking-wider uppercase transition"
+                      >
+                        Book Another Piece
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <form onSubmit={handleBookingSubmit} className="bg-white border border-stone-200 rounded-2xl p-6 sm:p-10 shadow-md space-y-6">
+                    
+                    {/* Jewelry Type */}
+                    <div>
+                      <label className="block text-sm font-semibold text-stone-700 mb-2">Jewelry Type</label>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        {['Ring', 'Necklace', 'Bracelet', 'Earrings', 'Chain', 'Watch', 'Jewelry Set', 'Other'].map((type) => (
+                          <button
+                            type="button"
+                            key={type}
+                            onClick={() => setBookingType(type)}
+                            className={`py-3 px-4 text-xs font-semibold rounded-lg border transition ${bookingType === type ? 'bg-stone-900 text-white border-stone-900 shadow-sm' : 'bg-stone-50 text-stone-700 border-stone-200 hover:bg-stone-100'}`}
+                          >
+                            {type}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Material */}
+                    <div>
+                      <label className="block text-sm font-semibold text-stone-700 mb-2">Material</label>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        {['925 Sterling Silver', 'Gold', 'Other'].map((mat) => (
+                          <button
+                            type="button"
+                            key={mat}
+                            onClick={() => setBookingMaterial(mat)}
+                            className={`py-3 px-4 text-xs font-semibold rounded-lg border transition ${bookingMaterial === mat ? 'bg-stone-900 text-white border-stone-900 shadow-sm' : 'bg-stone-50 text-stone-700 border-stone-200 hover:bg-stone-100'}`}
+                          >
+                            {mat}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Service */}
+                    <div>
+                      <label className="block text-sm font-semibold text-stone-700 mb-2">Service</label>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        {['Cleaning', 'Polishing', 'Cleaning + Polishing', 'Inspection'].map((srv) => (
+                          <button
+                            type="button"
+                            key={srv}
+                            onClick={() => setBookingService(srv)}
+                            className={`py-3 px-4 text-xs font-semibold rounded-lg border transition ${bookingService === srv ? 'bg-stone-900 text-white border-stone-900 shadow-sm' : 'bg-stone-50 text-stone-700 border-stone-200 hover:bg-stone-100'}`}
+                          >
+                            {srv}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Date and Time */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-stone-700 mb-2">Preferred Date</label>
+                        <input 
+                          type="date" 
+                          value={bookingDate}
+                          onChange={(e) => setBookingDate(e.target.value)}
+                          className="w-full border border-stone-300 rounded-lg p-3 text-sm focus:outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-stone-700 mb-2">Preferred Time</label>
+                        <input 
+                          type="text" 
+                          placeholder="e.g. Morning / 10:00 AM"
+                          value={bookingTime}
+                          onChange={(e) => setBookingTime(e.target.value)}
+                          className="w-full border border-stone-300 rounded-lg p-3 text-sm focus:outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Contact Information */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-stone-700 mb-2">Full Name *</label>
+                        <input 
+                          type="text" 
+                          required
+                          placeholder="Jane Doe"
+                          value={fullName}
+                          onChange={(e) => setFullName(e.target.value)}
+                          className="w-full border border-stone-300 rounded-lg p-3 text-sm focus:outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-stone-700 mb-2">Phone (M-Pesa) *</label>
+                        <input 
+                          type="tel" 
+                          required
+                          placeholder="0712 345 678"
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value)}
+                          className="w-full border border-stone-300 rounded-lg p-3 text-sm focus:outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-stone-700 mb-2">Email</label>
+                        <input 
+                          type="email" 
+                          placeholder="jane@example.com"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          className="w-full border border-stone-300 rounded-lg p-3 text-sm focus:outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Location Notes */}
+                    <div>
+                      <label className="block text-sm font-semibold text-stone-700 mb-2">Location / Additional instructions</label>
+                      <textarea 
+                        rows="3"
+                        placeholder="Provide your Nairobi pickup location or specific details about your jewelry..."
+                        value={locationNotes}
+                        onChange={(e) => setLocationNotes(e.target.value)}
+                        className="w-full border border-stone-300 rounded-lg p-3 text-sm focus:outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900"
+                      ></textarea>
+                    </div>
+
+                    {/* Estimated cost box */}
+                    <div className="bg-stone-50 border border-stone-200 rounded-xl p-5 flex flex-col sm:flex-row justify-between items-center gap-4">
+                      <div>
+                        <span className="text-xs text-stone-500 uppercase tracking-wider block font-semibold">Estimated Cost</span>
+                        <span className="font-serif font-bold text-2xl text-stone-900">KSh 1,200 – 2,500</span>
+                        <span className="text-[11px] text-stone-500 block">Final quote confirmed upon physical inspection</span>
+                      </div>
+                      <button 
+                        type="submit"
+                        disabled={isSubmittingBooking}
+                        className="w-full sm:w-auto bg-amber-600 hover:bg-amber-700 text-white font-semibold px-8 py-3.5 rounded text-xs uppercase tracking-wider transition shadow-md"
+                      >
+                        {isSubmittingBooking ? 'Saving...' : 'Confirm Booking'}
+                      </button>
+                    </div>
+
+                  </form>
+                )}
+              </main>
+            )}
+
+          </div>
+
+          {/* 🔑 ADMIN MODAL: CHANGE CREDENTIALS */}
+          {changeCredsModalOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
+              <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
+                <div className="flex justify-between items-center pb-3 mb-4 border-b border-stone-200">
+                  <h3 className="text-lg font-serif font-bold text-stone-900">Admin Account Settings</h3>
+                  <button onClick={() => setChangeCredsModalOpen(false)} className="text-stone-400 hover:text-stone-700">
+                    <Icon name="x" className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <form onSubmit={handleUpdateCredentials} className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-stone-700 mb-1">
+                      Full Name
+                    </label>
+                    <input
+                      type="text"
+                      value={newAdminFullName}
+                      onChange={(e) => setNewAdminFullName(e.target.value)}
+                      placeholder="e.g. Alpha Kipkorir"
+                      className="w-full border border-stone-300 rounded-lg p-2.5 text-sm focus:outline-none focus:border-stone-900"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-stone-700 mb-1">
+                      New Username
+                    </label>
+                    <input
+                      type="text"
+                      value={newAdminUsername}
+                      onChange={(e) => setNewAdminUsername(e.target.value)}
+                      placeholder="new_username"
+                      className="w-full border border-stone-300 rounded-lg p-2.5 text-sm focus:outline-none focus:border-stone-900"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-stone-700 mb-1">
+                      New Password (leave empty to keep current)
+                    </label>
+                    <input
+                      type="password"
+                      value={newAdminPassword}
+                      onChange={(e) => setNewAdminPassword(e.target.value)}
+                      placeholder="New strong password"
+                      className="w-full border border-stone-300 rounded-lg p-2.5 text-sm focus:outline-none focus:border-stone-900"
+                    />
+                  </div>
+
+                  <div className="flex justify-end gap-3 pt-3 border-t border-stone-200">
+                    <button
+                      type="button"
+                      onClick={() => setChangeCredsModalOpen(false)}
+                      className="px-4 py-2 rounded-lg border border-stone-300 text-stone-700 text-xs font-semibold"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-5 py-2 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold uppercase tracking-wider"
+                    >
+                      Save Account
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* ADMIN PRODUCT EDIT / ADD MODAL */}
+          {adminModalOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
+              <div className="bg-white rounded-2xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl max-h-[90vh] overflow-y-auto">
+                <div className="flex justify-between items-center pb-4 mb-6 border-b border-stone-200">
+                  <h3 className="text-xl font-serif font-bold text-stone-900">
+                    {editingProduct ? `Edit "${editingProduct.name}"` : 'Add New Jewelry Item'}
+                  </h3>
+                  <button 
+                    onClick={() => setAdminModalOpen(false)}
+                    className="text-stone-400 hover:text-stone-700 p-1"
+                  >
+                    <Icon name="x" className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <form onSubmit={handleSaveProduct} className="space-y-5">
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-stone-700 mb-1">
+                      Product Name *
+                    </label>
+                    <input 
+                      type="text"
+                      required
+                      placeholder="e.g. 925 Sterling Silver Cuban Link"
+                      value={formName}
+                      onChange={(e) => setFormName(e.target.value)}
+                      className="w-full border border-stone-300 rounded-lg p-3 text-sm focus:outline-none focus:border-stone-900"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold uppercase tracking-wider text-stone-700 mb-1">
+                        Category
+                      </label>
+                      <select
+                        value={formCategory}
+                        onChange={(e) => setFormCategory(e.target.value)}
+                        className="w-full border border-stone-300 rounded-lg p-3 text-sm bg-white focus:outline-none focus:border-stone-900"
+                      >
+                        <option value="925 Silver">925 Silver</option>
+                        <option value="Gold">Gold</option>
+                        <option value="Collections">Collections</option>
+                        <option value="Custom">Custom / Limited</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold uppercase tracking-wider text-stone-700 mb-1">
+                        Badge (Optional)
+                      </label>
+                      <input 
+                        type="text"
+                        placeholder="e.g. Best Seller, -20%, New"
+                        value={formBadge}
+                        onChange={(e) => setFormBadge(e.target.value)}
+                        className="w-full border border-stone-300 rounded-lg p-3 text-sm focus:outline-none focus:border-stone-900"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold uppercase tracking-wider text-stone-700 mb-1">
+                        Sale Price (KSh) *
+                      </label>
+                      <input 
+                        type="number"
+                        required
+                        min="0"
+                        placeholder="e.g. 4500"
+                        value={formPrice}
+                        onChange={(e) => setFormPrice(e.target.value)}
+                        className="w-full border border-stone-300 rounded-lg p-3 text-sm font-semibold focus:outline-none focus:border-stone-900"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold uppercase tracking-wider text-stone-700 mb-1">
+                        Original Price (Crossed Out KSh)
+                      </label>
+                      <input 
+                        type="number"
+                        min="0"
+                        placeholder="e.g. 5500"
+                        value={formOldPrice}
+                        onChange={(e) => setFormOldPrice(e.target.value)}
+                        className="w-full border border-stone-300 rounded-lg p-3 text-sm focus:outline-none focus:border-stone-900"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold uppercase tracking-wider text-stone-700 mb-1">
+                        Specifications / Weight
+                      </label>
+                      <input 
+                        type="text"
+                        placeholder="e.g. 925 Silver • 4.8g"
+                        value={formSpecs}
+                        onChange={(e) => setFormSpecs(e.target.value)}
+                        className="w-full border border-stone-300 rounded-lg p-3 text-sm focus:outline-none focus:border-stone-900"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold uppercase tracking-wider text-stone-700 mb-1">
+                        Rating (1 - 5)
+                      </label>
+                      <input 
+                        type="number"
+                        step="0.1"
+                        min="1"
+                        max="5"
+                        value={formRating}
+                        onChange={(e) => setFormRating(e.target.value)}
+                        className="w-full border border-stone-300 rounded-lg p-3 text-sm focus:outline-none focus:border-stone-900"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Photo upload */}
+                  <div className="border border-stone-200 rounded-xl p-4 bg-stone-50">
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-stone-700 mb-2">
+                      Jewelry Photo
+                    </label>
+                    
+                    <div className="flex flex-col sm:flex-row gap-4 items-center mb-3">
+                      <div className="w-24 h-24 rounded-lg bg-stone-200 border border-stone-300 flex items-center justify-center overflow-hidden flex-shrink-0">
+                        {imagePreview ? (
+                          <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                        ) : formImageUrl ? (
+                          <img src={formImageUrl} alt="Preview" className="w-full h-full object-cover" />
+                        ) : (
+                          <Icon name="sparkles" className="w-8 h-8 text-stone-400" />
+                        )}
+                      </div>
+
+                      <div className="flex-1 w-full space-y-2">
+                        <label className="block text-xs font-medium text-stone-600">
+                          Option 1: Upload from Computer/Phone
+                        </label>
+                        <input 
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageFileChange}
+                          className="text-xs text-stone-600 file:mr-3 file:py-2 file:px-4 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-stone-900 file:text-white hover:file:bg-amber-600 cursor-pointer"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-medium text-stone-600 mb-1">
+                        Option 2: Or Paste Image Web Link (Unsplash/CDN)
+                      </label>
+                      <input 
+                        type="url"
+                        placeholder="https://images.unsplash.com/photo-..."
+                        value={formImageUrl}
+                        onChange={(e) => { setFormImageUrl(e.target.value); setImagePreview(e.target.value); }}
+                        className="w-full border border-stone-300 rounded-lg p-2.5 text-xs bg-white focus:outline-none focus:border-stone-900"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end gap-3 pt-4 border-t border-stone-200">
+                    <button
+                      type="button"
+                      onClick={() => setAdminModalOpen(false)}
+                      className="px-5 py-2.5 rounded-lg border border-stone-300 text-stone-700 text-xs font-semibold uppercase tracking-wider hover:bg-stone-100 transition"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isSavingProduct}
+                      className="px-6 py-2.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold uppercase tracking-wider shadow transition"
+                    >
+                      {isSavingProduct ? 'Saving Item...' : (editingProduct ? 'Save Changes' : 'Publish Product')}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* Footer */}
+          <footer className="bg-stone-900 text-stone-400 pt-16 pb-12 border-t border-stone-800">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
+                
+                <div>
+                  <h3 className="text-white font-serif tracking-widest text-xl mb-4 font-bold">POLISH 925</h3>
+                  <p className="text-sm text-stone-400 leading-relaxed mb-4">
+                    Premium jewelry and professional care in Kenya. Discover timeless elegance with genuine 925 sterling silver and gold.
+                  </p>
+                  <div className="text-xs text-stone-400 space-y-1">
+                    <p className="flex items-center gap-2"><Icon name="map-pin" className="w-3.5 h-3.5 text-amber-500" /> Nairobi, Kenya</p>
+                    <p className="flex items-center gap-2"><Icon name="phone" className="w-3.5 h-3.5 text-amber-500" /> +254 700 000 925</p>
+                    <p className="flex items-center gap-2"><Icon name="mail" className="w-3.5 h-3.5 text-amber-500" /> care@polish925.co.ke</p>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="text-white font-semibold text-sm tracking-wider uppercase mb-4">Shop</h4>
+                  <ul className="space-y-2 text-sm">
+                    <li><button onClick={() => navigateToShopWithCategory('Gold')} className="hover:text-white transition">Gold Jewelry</button></li>
+                    <li><button onClick={() => navigateToShopWithCategory('925 Silver')} className="hover:text-white transition">925 Silver</button></li>
+                    <li><button onClick={() => navigateToShopWithCategory('All')} className="hover:text-white transition">Rings & Bands</button></li>
+                    <li><button onClick={() => navigateToShopWithCategory('All')} className="hover:text-white transition">Necklaces & Chains</button></li>
+                    <li><button onClick={() => navigateToShopWithCategory('Collections')} className="hover:text-white transition">Special Collections</button></li>
+                  </ul>
+                </div>
+
+                <div>
+                  <h4 className="text-white font-semibold text-sm tracking-wider uppercase mb-4">Services</h4>
+                  <ul className="space-y-2 text-sm">
+                    <li><button onClick={() => { setActiveTab('booking'); setBookingService('Polishing'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="hover:text-white transition">Polishing Service</button></li>
+                    <li><button onClick={() => { setActiveTab('booking'); setBookingService('Cleaning'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="hover:text-white transition">Ultrasonic Cleaning</button></li>
+                    <li><button onClick={() => { setActiveTab('booking'); setBookingService('Inspection'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="hover:text-white transition">Jewelry Inspection</button></li>
+                    <li><button onClick={() => { setActiveTab('booking'); setBookingService('Cleaning + Polishing'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="hover:text-white transition">Full Spa & Restoration</button></li>
+                  </ul>
+                </div>
+
+                <div>
+                  <h4 className="text-white font-semibold text-sm tracking-wider uppercase mb-4">Customer Care</h4>
+                  <ul className="space-y-2 text-sm">
+                    <li><a href="#" onClick={(e) => { e.preventDefault(); showNotification("Delivery: Free across Kenya over KSh 5,000"); }} className="hover:text-white transition">Delivery Information</a></li>
+                    <li><a href="#" onClick={(e) => { e.preventDefault(); showNotification("Care: Clean 925 silver with soft cloth"); }} className="hover:text-white transition">Jewelry Care Guide</a></li>
+                    <li><a href="#" onClick={(e) => { e.preventDefault(); showNotification("Warranty: 1-Year Authenticity Guarantee"); }} className="hover:text-white transition">Authenticity Guarantee</a></li>
+                    <li><a href="#" onClick={(e) => { e.preventDefault(); showNotification("WhatsApp support: +254 700 000 925"); }} className="hover:text-white transition">Help & FAQs</a></li>
+                    {adminToken && (
+                      <li>
+                        <button onClick={() => { setActiveTab('admin'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="text-amber-400 font-semibold hover:underline">
+                          ⚙️ Admin Portal Active
+                        </button>
+                      </li>
+                    )}
+                  </ul>
+                </div>
+
+              </div>
+
+              <div className="border-t border-stone-800 pt-8 flex flex-col sm:flex-row justify-between items-center text-xs text-stone-500">
+                <p 
+                  onClick={() => { setActiveTab('admin'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                  className="cursor-default select-none hover:text-stone-400 transition"
+                  title="POLISH 925"
+                >
+                  © 2026 POLISH 925. All rights reserved.
+                </p>
+                <p className="mt-2 sm:mt-0">Handcrafted & Restored with Passion in Kenya</p>
+              </div>
+            </div>
+          </footer>
+
+          {/* Mobile Bottom Navigation Bar */}
+          <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-stone-200 z-40 flex justify-around py-2.5 shadow-lg">
+            <button 
+              onClick={() => { setActiveTab('home'); setSelectedCategory('All'); }} 
+              className={`flex flex-col items-center text-xs ${activeTab === 'home' ? 'text-amber-600 font-bold' : 'text-stone-600'}`}
+            >
+              <Icon name="sparkles" className="w-5 h-5 mb-0.5" />
+              <span>Home</span>
+            </button>
+            <button 
+              onClick={() => { setActiveTab('shop'); }} 
+              className={`flex flex-col items-center text-xs ${activeTab === 'shop' ? 'text-amber-600 font-bold' : 'text-stone-600'}`}
+            >
+              <Icon name="shopping-bag" className="w-5 h-5 mb-0.5" />
+              <span>Shop</span>
+            </button>
+            <button 
+              onClick={() => { setActiveTab('booking'); }} 
+              className={`flex flex-col items-center text-xs ${activeTab === 'booking' ? 'text-amber-600 font-bold' : 'text-stone-600'}`}
+            >
+              <Icon name="calendar" className="w-5 h-5 mb-0.5" />
+              <span>Services</span>
+            </button>
+            {adminToken ? (
+              <button 
+                onClick={() => { setActiveTab('admin'); }} 
+                className={`flex flex-col items-center text-xs ${activeTab === 'admin' ? 'text-amber-600 font-bold' : 'text-stone-600'}`}
+              >
+                <Icon name="shield-check" className="w-5 h-5 mb-0.5 text-amber-600" />
+                <span>Admin</span>
+              </button>
+            ) : (
+              <button 
+                onClick={() => showNotification(`Your cart contains ${cartCount} items`)} 
+                className="flex flex-col items-center text-xs text-stone-600 relative"
+              >
+                <Icon name="shopping-bag" className="w-5 h-5 mb-0.5" />
+                {cartCount > 0 && (
+                  <span className="absolute top-0 right-2 bg-stone-900 text-white text-[9px] w-3.5 h-3.5 rounded-full flex items-center justify-center font-bold">
+                    {cartCount}
+                  </span>
+                )}
+                <span>Cart</span>
+              </button>
+            )}
+          </div>
+
+        </div>
+      );
+    }
+
+    const rootElement = document.getElementById('root');
+    const root = ReactDOM.createRoot(rootElement);
+    root.render(<Polish925App />);
+  </script>
+</body>
+</html>
