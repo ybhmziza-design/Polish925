@@ -201,6 +201,11 @@ def index():
 def serve_upload(filename):
     return send_from_directory(UPLOAD_FOLDER, filename)
 
+# Serve static assets (posters, banners, logos)
+@app.route("/assets/<path:filename>")
+def serve_asset(filename):
+    return send_from_directory(os.path.join(BASE_DIR, "..", "assets"), filename)
+
 # ----------------- ADMIN AUTHENTICATION ----------------- #
 
 @app.route("/api/admin/login", methods=["POST"])
@@ -506,5 +511,5 @@ def update_booking_status(booking_id):
     return jsonify({"success": True, "status": new_status})
 
 if __name__ == "__main__":
-    print(f"POLISH 925 Server running at http://127.0.0.1:5000")
+    print(f"SILVER PLUG KENYA Server running at http://127.0.0.1:5000")
     app.run(host="127.0.0.1", port=5000, debug=True)
