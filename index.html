@@ -155,7 +155,8 @@
       // Navigation
       const [activeTab, setActiveTab] = useState('home'); // 'home' | 'shop' | 'booking' | 'admin'
       const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-      const [cartCount, setCartCount] = useState(2);
+      const [cartItems, setCartItems] = useState([]);
+      const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
       const [wishlistCount, setWishlistCount] = useState(0);
       const [notification, setNotification] = useState('');
       const [selectedCategory, setSelectedCategory] = useState('All');
@@ -171,7 +172,7 @@
           return JSON.parse(localStorage.getItem('polish925_admin_user') || 'null');
         } catch(e) { return null; }
       });
-      const [loginUsername, setLoginUsername] = useState('admin');
+      const [loginUsername, setLoginUsername] = useState('');
       const [loginPassword, setLoginPassword] = useState('');
       const [loginError, setLoginError] = useState('');
       const [isLoggingIn, setIsLoggingIn] = useState(false);
@@ -399,12 +400,40 @@
         }
       };
 
-      // ----------------- PUBLIC BOOKINGS ----------------- //
+      // ----------------- CART & PUBLIC ACTIONS ----------------- //
 
-      const handleAddToCart = (productName) => {
-        setCartCount(prev => prev + 1);
-        showNotification(`Added ${productName} to cart! 🛍️`);
+      const handleAddToCart = (product) => {
+        // Find product object if name passed or object passed
+        const itemObj = typeof product === 'string' 
+          ? (products.find(p => p.name === product) || { id: Date.now(), name: product, price: 3500, image: 'https://images.unsplash.com/photo-1603561591411-07134e71a2a9?auto=format&fit=crop&w=600&q=80' })
+          : product;
+
+        setCartItems(prev => {
+          const existing = prev.find(i => i.id === itemObj.id);
+          if (existing) {
+            return prev.map(i => i.id === itemObj.id ? { ...i, qty: (i.qty || 1) + 1 } : i);
+          }
+          return [...prev, { ...itemObj, qty: 1 }];
+        });
+        showNotification(`Added ${itemObj.name} to cart! 🛍️`);
       };
+
+      const handleRemoveFromCart = (productId) => {
+        setCartItems(prev => prev.filter(i => i.id !== productId));
+      };
+
+      const handleUpdateCartQty = (productId, delta) => {
+        setCartItems(prev => prev.map(i => {
+          if (i.id === productId) {
+            const newQty = (i.qty || 1) + delta;
+            return newQty > 0 ? { ...i, qty: newQty } : null;
+          }
+          return i;
+        }).filter(Boolean));
+      };
+
+      const cartCount = cartItems.reduce((acc, curr) => acc + (curr.qty || 1), 0);
+      const cartTotal = cartItems.reduce((acc, curr) => acc + (Number(curr.price) * (curr.qty || 1)), 0);
 
       const handleToggleWishlist = (productName) => {
         setWishlistCount(prev => prev + 1);
@@ -740,14 +769,16 @@
                   </button>
 
                   <button 
-                    onClick={() => showNotification(`Your cart contains ${cartCount} items`)} 
-                    className="text-stone-600 hover:text-stone-900 relative flex items-center p-1 transition"
-                    title="Shopping Cart"
+                    onClick={() => setCartDrawerOpen(true)} 
+                    className="text-stone-600 hover:text-stone-900 relative flex items-center p-1.5 rounded-lg hover:bg-stone-100 transition"
+                    title="Open Shopping Cart"
                   >
-                    <Icon name="shopping-bag" className="w-5 h-5" />
-                    <span className="absolute -top-1.5 -right-1.5 bg-stone-900 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">
-                      {cartCount}
-                    </span>
+                    <Icon name="shopping-bag" className="w-5 h-5 text-stone-800" />
+                    {cartCount > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-amber-600 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">
+                        {cartCount}
+                      </span>
+                    )}
                   </button>
 
                   {/* Mobile menu button */}
@@ -868,13 +899,6 @@
                         {isLoggingIn ? 'Authenticating...' : 'Sign In to Dashboard'}
                       </button>
                     </form>
-
-                    <div className="mt-6 pt-5 border-t border-stone-100 text-center text-xs text-stone-400">
-                      <p className="font-medium text-stone-500">Default Authorized Credentials:</p>
-                      <p className="mt-1">Username: <code className="bg-stone-100 text-stone-800 px-1.5 py-0.5 rounded font-mono">admin</code></p>
-                      <p className="mt-0.5">Password: <code className="bg-stone-100 text-stone-800 px-1.5 py-0.5 rounded font-mono">polish925admin</code></p>
-                      <p className="mt-2 text-[11px] text-stone-400">You can customize this username & password after logging in.</p>
-                    </div>
                   </div>
                 ) : (
                   /* ✅ IF LOGGED IN: FULL ADMIN CONTROL DASHBOARD */
@@ -1293,13 +1317,13 @@
                               </div>
                               <div className="grid grid-cols-2 gap-2">
                                 <button 
-                                  onClick={() => handleAddToCart(item.name)}
+                                  onClick={() => handleAddToCart(item)}
                                   className="bg-white border border-stone-900 text-stone-900 hover:bg-stone-900 hover:text-white py-2.5 text-xs font-semibold uppercase tracking-wider rounded transition"
                                 >
                                   Add
                                 </button>
                                 <button 
-                                  onClick={() => { handleAddToCart(item.name); showNotification(`Proceeding to checkout with ${item.name}`); }}
+                                  onClick={() => { handleAddToCart(item); setCartDrawerOpen(true); }}
                                   className="bg-stone-900 text-white hover:bg-amber-600 py-2.5 text-xs font-semibold uppercase tracking-wider rounded transition"
                                 >
                                   Buy Now
@@ -1439,13 +1463,13 @@
                           </div>
                           <div className="grid grid-cols-2 gap-2">
                             <button 
-                              onClick={() => handleAddToCart(item.name)}
+                              onClick={() => handleAddToCart(item)}
                               className="bg-white border border-stone-900 text-stone-900 hover:bg-stone-900 hover:text-white py-2 text-xs font-semibold uppercase tracking-wider rounded transition"
                             >
                               Add
                             </button>
                             <button 
-                              onClick={() => { handleAddToCart(item.name); showNotification(`Proceeding to checkout with ${item.name}`); }}
+                              onClick={() => { handleAddToCart(item); setCartDrawerOpen(true); }}
                               className="bg-stone-900 text-white hover:bg-amber-600 py-2 text-xs font-semibold uppercase tracking-wider rounded transition"
                             >
                               Buy Now
@@ -1899,6 +1923,135 @@
             </div>
           )}
 
+          {/* 🛍️ INTERACTIVE SHOPPING CART DRAWER */}
+          {cartDrawerOpen && (
+            <div className="fixed inset-0 z-50 overflow-hidden modal-backdrop flex justify-end">
+              <div 
+                className="w-full max-w-md bg-white h-full shadow-2xl flex flex-col justify-between animate-slide-left"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Cart Drawer Header */}
+                <div className="p-6 border-b border-stone-200 flex justify-between items-center bg-stone-50">
+                  <div className="flex items-center gap-2.5">
+                    <Icon name="shopping-bag" className="w-5 h-5 text-amber-600" />
+                    <h3 className="font-serif font-bold text-xl text-stone-900">Your Shopping Cart</h3>
+                    <span className="text-xs bg-stone-200 text-stone-800 font-bold px-2 py-0.5 rounded-full">
+                      {cartCount}
+                    </span>
+                  </div>
+                  <button 
+                    onClick={() => setCartDrawerOpen(false)}
+                    className="p-1.5 text-stone-400 hover:text-stone-800 rounded-lg hover:bg-stone-200 transition"
+                  >
+                    <Icon name="x" className="w-5 h-5" />
+                  </button>
+                </div>
+
+                {/* Cart Items List */}
+                <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                  {cartItems.length === 0 ? (
+                    <div className="text-center py-16 text-stone-400">
+                      <div className="w-16 h-16 bg-stone-100 rounded-full flex items-center justify-center mx-auto mb-4 text-stone-300">
+                        <Icon name="shopping-bag" className="w-8 h-8" />
+                      </div>
+                      <p className="font-serif text-lg text-stone-700 font-semibold mb-1">Your cart is empty</p>
+                      <p className="text-xs text-stone-500 mb-6 max-w-xs mx-auto">Explore our genuine 925 sterling silver and gold pieces to add to your collection.</p>
+                      <button
+                        onClick={() => { setCartDrawerOpen(false); setActiveTab('shop'); }}
+                        className="bg-stone-900 hover:bg-amber-600 text-white text-xs font-semibold px-6 py-3 rounded uppercase tracking-wider transition"
+                      >
+                        Start Shopping
+                      </button>
+                    </div>
+                  ) : (
+                    cartItems.map((item) => (
+                      <div key={item.id} className="flex gap-4 p-3.5 bg-stone-50 rounded-xl border border-stone-200 items-center">
+                        <img 
+                          src={item.image} 
+                          alt={item.name} 
+                          className="w-16 h-16 rounded-lg object-cover border border-stone-200 bg-white flex-shrink-0"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-serif font-bold text-sm text-stone-900 truncate">{item.name}</h4>
+                          <p className="text-xs text-amber-700 font-semibold mt-0.5">
+                            KSh {Number(item.price).toLocaleString()}
+                          </p>
+                          <div className="flex items-center gap-3 mt-2">
+                            <div className="flex items-center border border-stone-300 rounded bg-white">
+                              <button 
+                                onClick={() => handleUpdateCartQty(item.id, -1)}
+                                className="px-2 py-0.5 text-xs text-stone-600 hover:bg-stone-100 font-bold"
+                              >
+                                -
+                              </button>
+                              <span className="px-2.5 text-xs font-semibold text-stone-800">{item.qty || 1}</span>
+                              <button 
+                                onClick={() => handleUpdateCartQty(item.id, 1)}
+                                className="px-2 py-0.5 text-xs text-stone-600 hover:bg-stone-100 font-bold"
+                              >
+                                +
+                              </button>
+                            </div>
+                            <button
+                              onClick={() => handleRemoveFromCart(item.id)}
+                              className="text-xs text-red-500 hover:text-red-700 font-medium"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-bold text-sm text-stone-900">
+                            KSh {(Number(item.price) * (item.qty || 1)).toLocaleString()}
+                          </p>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                {/* Cart Drawer Footer with M-Pesa / Checkout */}
+                {cartItems.length > 0 && (
+                  <div className="p-6 border-t border-stone-200 bg-stone-50 space-y-4">
+                    <div className="space-y-1.5 text-xs text-stone-600">
+                      <div className="flex justify-between">
+                        <span>Subtotal:</span>
+                        <span className="font-semibold text-stone-900">KSh {cartTotal.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Delivery (Nairobi & Countrywide):</span>
+                        <span className="font-semibold text-green-700">
+                          {cartTotal >= 5000 ? 'FREE' : 'KSh 350'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-base font-bold text-stone-900 pt-2 border-t border-stone-200">
+                        <span>Total:</span>
+                        <span className="text-amber-700">
+                          KSh {(cartTotal + (cartTotal >= 5000 ? 0 : 350)).toLocaleString()}
+                        </span>
+                      </div>
+                    </div>
+
+                    <button 
+                      onClick={() => {
+                        const message = `Hello POLISH 925, I want to order:\n` + cartItems.map(i => `• ${i.name} (${i.qty}x) - KSh ${(Number(i.price) * i.qty).toLocaleString()}`).join('\n') + `\nTotal: KSh ${(cartTotal + (cartTotal >= 5000 ? 0 : 350)).toLocaleString()}`;
+                        window.open(`https://wa.me/254700000925?text=${encodeURIComponent(message)}`, '_blank');
+                      }}
+                      className="w-full bg-stone-900 hover:bg-amber-600 text-white font-semibold py-3.5 rounded-lg text-xs uppercase tracking-wider transition shadow-md flex items-center justify-center gap-2"
+                    >
+                      <span>Checkout via WhatsApp & M-Pesa</span>
+                      <Icon name="arrow-right" className="w-4 h-4 text-white" />
+                    </button>
+
+                    <p className="text-[11px] text-center text-stone-400">
+                      🔒 Secure order processed instantly with customer support.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Footer */}
           <footer className="bg-stone-900 text-stone-400 pt-16 pb-12 border-t border-stone-800">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -2002,12 +2155,12 @@
               </button>
             ) : (
               <button 
-                onClick={() => showNotification(`Your cart contains ${cartCount} items`)} 
+                onClick={() => setCartDrawerOpen(true)} 
                 className="flex flex-col items-center text-xs text-stone-600 relative"
               >
                 <Icon name="shopping-bag" className="w-5 h-5 mb-0.5" />
                 {cartCount > 0 && (
-                  <span className="absolute top-0 right-2 bg-stone-900 text-white text-[9px] w-3.5 h-3.5 rounded-full flex items-center justify-center font-bold">
+                  <span className="absolute top-0 right-2 bg-amber-600 text-white text-[9px] w-3.5 h-3.5 rounded-full flex items-center justify-center font-bold">
                     {cartCount}
                   </span>
                 )}
