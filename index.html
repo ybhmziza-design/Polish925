@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SILVER PLUG KENYA — 925 Sterling Silver Jewelry</title>
+  <link rel="icon" type="image/jpeg" href="/assets/logo_sp_square.jpg" />
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -244,6 +245,30 @@
         } catch (err) {
           console.log("Bookings fetch error");
         }
+      };
+
+      // Secret 5-click counter to access admin portal
+      const [adminClickCount, setAdminClickCount] = useState(0);
+      const adminClickTimer = useRef(null);
+
+      const handleSecretAdminClick = () => {
+        setAdminClickCount(prev => {
+          const next = prev + 1;
+          if (adminClickTimer.current) clearTimeout(adminClickTimer.current);
+
+          if (next >= 5) {
+            setActiveTab('admin');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            return 0;
+          }
+
+          // Reset count if no click within 2.5 seconds
+          adminClickTimer.current = setTimeout(() => {
+            setAdminClickCount(0);
+          }, 2500);
+
+          return next;
+        });
       };
 
       // Check for secret admin URL (e.g. yoursite.com/#admin or yoursite.com/?admin=1)
@@ -695,11 +720,18 @@
                 
                 {/* Logo */}
                 <div 
-                  className="flex-shrink-0 cursor-pointer select-none" 
+                  className="flex items-center gap-3 cursor-pointer select-none group" 
                   onClick={() => { setActiveTab('home'); setSelectedCategory('All'); }}
                 >
-                  <h1 className="text-2xl font-serif tracking-widest text-stone-900 font-bold">SILVER PLUG</h1>
-                  <p className="text-[10px] tracking-widest text-amber-600 font-semibold uppercase">925 Sterling Silver Jewelry</p>
+                  <div className="w-12 h-12 rounded-xl bg-black border border-stone-800 p-1 flex items-center justify-center shadow-sm overflow-hidden group-hover:scale-105 group-hover:border-amber-500/60 transition duration-300">
+                    <img src="/assets/logo_sp_square.jpg" alt="Silver Plug SP Logo" className="w-full h-full object-contain" />
+                  </div>
+                  <div>
+                    <h1 className="text-xl sm:text-2xl font-serif tracking-widest text-stone-900 font-bold leading-tight group-hover:text-amber-700 transition">
+                      SILVER PLUG
+                    </h1>
+                    <p className="text-[10px] tracking-widest text-amber-600 font-semibold uppercase">925 Sterling Silver Jewelry</p>
+                  </div>
                 </div>
 
                 {/* Desktop Navigation */}
@@ -849,10 +881,10 @@
                 {!adminToken ? (
                   <div className="max-w-md mx-auto my-12 bg-white border border-stone-200 rounded-2xl p-8 shadow-xl">
                     <div className="text-center mb-6">
-                      <div className="w-16 h-16 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-4 border border-amber-200">
-                        <Icon name="shield-check" className="w-8 h-8 text-amber-600" />
+                      <div className="w-16 h-16 rounded-2xl bg-black border border-stone-800 p-1 flex items-center justify-center mx-auto mb-4 shadow-lg overflow-hidden">
+                        <img src="/assets/logo_sp_square.jpg" alt="Silver Plug SP Logo" className="w-full h-full object-contain" />
                       </div>
-                      <h2 className="text-2xl font-serif font-bold text-stone-900">Admin Authentication</h2>
+                      <h2 className="text-2xl font-serif font-bold text-stone-900">SILVER PLUG KENYA</h2>
                       <p className="text-stone-500 text-xs mt-1">Authorized personnel only. Please sign in to manage prices and photos.</p>
                     </div>
 
@@ -1153,19 +1185,23 @@
               <main>
                 {/* Hero Section */}
                 <section className="relative bg-stone-900 text-white py-24 lg:py-36 overflow-hidden">
-                  <div className="absolute inset-0 opacity-35">
+                  <div className="absolute inset-0 opacity-40">
                     <img 
                       src="/assets/silver_plug_poster.jpg" 
                       alt="Silver Plug Kenya" 
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover object-center"
                     />
                   </div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-stone-950/90 via-stone-950/70 to-stone-950/40"></div>
                   <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center sm:text-left">
                     <div className="max-w-2xl">
-                      <span className="text-amber-400 text-xs sm:text-sm tracking-widest uppercase font-semibold inline-block mb-2">
-                        Luku bila silver ni mavazi
-                      </span>
-                      <h1 className="text-4xl sm:text-6xl font-serif font-bold mt-2 mb-6 leading-tight">
+                      <div className="inline-flex items-center gap-2.5 bg-black/80 backdrop-blur-md border border-stone-700/80 px-3.5 py-1.5 rounded-full mb-5 shadow-lg">
+                        <img src="/assets/logo_sp_square.jpg" alt="SP" className="w-5 h-5 rounded-full object-cover border border-amber-500/50" />
+                        <span className="text-amber-400 text-xs sm:text-sm tracking-widest uppercase font-semibold">
+                          Luku bila silver ni mavazi
+                        </span>
+                      </div>
+                      <h1 className="text-4xl sm:text-6xl font-serif font-bold mt-1 mb-6 leading-tight">
                         Silver Plug Kenya. <br />925 Sterling Silver.
                       </h1>
                       <p className="text-stone-300 text-base sm:text-lg mb-8 max-w-lg leading-relaxed">
@@ -2056,7 +2092,15 @@
               <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
                 
                 <div>
-                  <h3 className="text-white font-serif tracking-widest text-xl mb-4 font-bold">SILVER PLUG KENYA</h3>
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-xl bg-black border border-stone-800 p-1 flex items-center justify-center shadow-md overflow-hidden">
+                      <img src="/assets/logo_sp_square.jpg" alt="Silver Plug SP Logo" className="w-full h-full object-contain" />
+                    </div>
+                    <div>
+                      <h3 className="text-white font-serif tracking-widest text-lg font-bold leading-none">SILVER PLUG</h3>
+                      <p className="text-[10px] tracking-widest text-amber-500 font-semibold uppercase mt-1">Kenya</p>
+                    </div>
+                  </div>
                   <p className="text-sm text-stone-400 leading-relaxed mb-4">
                     Authentic 925 sterling silver jewelry in Kenya. "Luku bila silver ni mavazi" — timeless style & expert care.
                   </p>
@@ -2109,9 +2153,8 @@
 
               <div className="border-t border-stone-800 pt-8 flex flex-col sm:flex-row justify-between items-center text-xs text-stone-500">
                 <p 
-                  onClick={() => { setActiveTab('admin'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                  onClick={handleSecretAdminClick}
                   className="cursor-default select-none hover:text-stone-400 transition"
-                  title="SILVER PLUG KENYA"
                 >
                   © 2026 SILVER PLUG KENYA. All rights reserved.
                 </p>
